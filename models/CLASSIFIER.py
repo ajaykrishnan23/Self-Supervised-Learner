@@ -60,7 +60,7 @@ class CLASSIFIER(pl.LightningModule): #SSLFineTuner
     #override optimizer to allow modification of encoder learning rate
     def configure_optimizers(self):
         optimizer = SGD([
-                  {'params': self.encoder.parameters()},
+                  {'params': self.encoder.parameters(), 'lr':0},
                   {'params': self.linear_layer.parameters(), 'lr': self.classifier_hparams['linear_lr']}
               ], lr=self.classifier_hparams['learning_rate'], momentum=self.classifier_hparams['momentum'])
               

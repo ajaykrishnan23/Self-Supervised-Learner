@@ -21,12 +21,12 @@ class SimCLRTransform(Pipeline):
         self.to_int32_cpu = ops.Cast(dtype=types.INT32, device="cpu")
         
         self.coin = ops.random.CoinFlip(probability=0.5)
-        self.uniform = ops.random.Uniform(range = [0.5,1.7])
-        self.degree = ops.random.Uniform(range = [0,6.2])
+        self.uniform = ops.random.Uniform(range = [0.5,2.7])
+        self.degree = ops.random.Uniform(range = [0,360])
         self.blur_amt = ops.random.Uniform(values = [float(i) for i in range(1, int(0.1*self.input_height), 2)])
 
         self.decode = ops.ImageDecoder(device = 'mixed', output_type = types.RGB)
-        self.crop = ops.RandomResizedCrop(size = self.input_height, minibatch_size = batch_size, random_area=[0.2,1.0], device = "gpu", dtype = types.FLOAT)
+        self.crop = ops.RandomResizedCrop(size = self.input_height, minibatch_size = batch_size, random_area=[0.7,1.0], device = "gpu", dtype = types.FLOAT)
         self.flip = ops.Flip(vertical = self.coin(), horizontal = self.coin(), device = "gpu")
         self.colorjit_gray = ops.ColorTwist(brightness = self.uniform(), contrast = self.uniform(), hue = self.uniform(), saturation = self.uniform(), device = "gpu", dtype = types.FLOAT)
         self.blur = ops.GaussianBlur(window_size = self.to_int32_cpu(self.blur_amt()), device = "gpu", dtype = types.FLOAT)
@@ -35,10 +35,11 @@ class SimCLRTransform(Pipeline):
 
     def train_transform(self, image):
         
-        image = self.crop(image)
+        
         image = self.rotate(image)
         image = self.flip(image)
         image = self.colorjit_gray(image)
+        image = self.crop(image)
         image = self.blur(image)
         image = self.swapaxes(image)
         return image

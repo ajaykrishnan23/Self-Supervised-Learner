@@ -1,3 +1,4 @@
+
 import nvidia.dali.ops as ops
 import nvidia.dali.types as types
 from nvidia.dali.pipeline import Pipeline
@@ -20,26 +21,25 @@ class SimCLRTransform(Pipeline):
         self.to_int32_cpu = ops.Cast(dtype=types.INT32, device="cpu")
         
         self.coin = ops.random.CoinFlip(probability=0.5)
-        self.uniform = ops.random.Uniform(range = [0.5,2.7])
-        self.degree = ops.random.Uniform(range = [0,360])
+        self.uniform = ops.random.Uniform(range = [0.5,1.5])
         self.blur_amt = ops.random.Uniform(values = [float(i) for i in range(1, int(0.1*self.input_height), 2)])
-
+        
         self.cast = ops.Cast(dtype = types.FLOAT, device='gpu')
         self.decode = ops.ImageDecoder(device = 'mixed', output_type = types.RGB)
         self.crop = ops.RandomResizedCrop(size = self.input_height, minibatch_size = batch_size, random_area=[0.7,1.0], device = "gpu", dtype = types.FLOAT)
+        
         self.flip = ops.Flip(vertical = self.coin(), horizontal = self.coin(), device = "gpu")
-        self.colorjit_gray = ops.ColorTwist(brightness = self.uniform(), contrast = self.uniform(), hue = self.uniform(), saturation = self.uniform(), device = "gpu", dtype = types.FLOAT)
+        self.colorjit_gray = ops.ColorTwist(brightness = self.uniform(), contrast = self.uniform(), hue = self.uniform(), saturation = self.uniform(), device = "gpu")
         self.blur = ops.GaussianBlur(window_size = self.to_int32_cpu(self.blur_amt()), device = "gpu", dtype = types.FLOAT)
-        self.rotate = ops.Rotate(angle = self.degree(), keep_size = True, interp_type= types.DALIInterpType.INTERP_LINEAR, device = "gpu", dtype= types.FLOAT)
+        self.rotate = ops.Rotate(angle = self.uniform(), keep_size = True, interp_type= types.DALIInterpType.INTERP_LINEAR, device = "gpu", dtype= types.FLOAT)
         self.swapaxes = ops.Transpose(perm = [2,0,1], device = "gpu") 
 
     def train_transform(self, image):
-        
-        
+        image = self.cast(image)
+        image = self.crop(image)
         image = self.rotate(image)
         image = self.flip(image)
         image = self.colorjit_gray(image)
-        image = self.crop(image)
         image = self.blur(image)
         image = self.swapaxes(image)
         return image

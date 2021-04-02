@@ -35,7 +35,7 @@ Self-supervised learning is a subfield of machine learning focused on developing
 Step 1) **Self-Supervied Learning (SSL): Training an encoder without labels**
    - The first step is to train a self-supervised encoder. Self-supervised learning does not require labels and lets the model learn from purely unlabeled data to build an image encoder.
 ```bash
-python train.py --technique SIMCLR --model imagenet_resnet18 --DATA_PATH myDataFolder/AllImages  --epochs 100 --log_name ssl 
+!python /content/SSL/train_da.py --DA_TECHNIQUE DA_STD --sample_size 0.5 --cycles 3 --DIVERSE_DATA_PATH /content/DA_DATASET1 --subset_size 0.4 --embedding_size 128 --DATA_PATH /content/UCMerced_LandUse/Images --model minicnn128 --batch_size 128 --cpus 2 --learning_rate 1e-3 --log_name ssl --image_size 128 --epochs 2 --technique SIMCLR
 ```
 
 Step 2) **Fine tuning: Training a classifier with labels**

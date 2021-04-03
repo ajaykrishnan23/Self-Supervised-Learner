@@ -12,6 +12,7 @@ import copy
 import torch
 from torchvision.datasets import ImageFolder
 
+
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 from pl_bolts.callbacks.ssl_online import SSLOnlineEvaluator
@@ -38,7 +39,7 @@ def load_model(args):
     Finally, if it is none of the above, it could be a user specified .pt file to represent the encoder.
     '''
     technique = supported_techniques[args.technique]
-    model_options = Enum('Models_Implemented', 'resnet18 imagenet_resnet18 resnet50 imagenet_resnet50 nasnet imagenet_nasnet')
+    model_options = Enum('Models_Implemented', 'resnet18 imagenet_resnet18 resnet50 imagenet_resnet50 nasnet imagenet_nasnet mobilenetv2 imagenet_mobilenetv2')
     
     if '.ckpt' in args.model:
         args.checkpoint_path = args.model
@@ -63,11 +64,17 @@ def load_model(args):
         output_size =  int(''.join(x for x in args.model if x.isdigit()))
         args.encoder = encoders.miniCNN(output_size)
         args.encoder.embedding_size = output_size  
+    elif args.model == model_options.nasnet.name:
+        args.encoder = encoders.NasNet(pretrained=False)
+        args.encoder.embedding_size = 1280
     elif args.model == model_options.imagenet_nasnet.name:
         args.encoder = encoders.NasNet(pretrained=True)
         args.encoder.embedding_size = 1280
-    elif args.model == model_options.imagenet_nasnet.name:
-        args.encoder = encoders.NasNet(pretrained=False)
+    elif args.model == model_options.mobilenetv2.name:
+        args.encoder = encoders.MobileNet(pretrained=False)
+        args.encoder.embedding_size = 1280
+    elif args.model == model_options.imagenet_mobilenetv2.name:
+        args.encoder = encoders.MobileNet(pretrained=True)
         args.encoder.embedding_size = 1280
     elif args.model == model_options.resnet18.name:
         args.encoder = encoders.resnet18(pretrained=False, first_conv=True, maxpool1=True, return_all_feature_maps=False)

@@ -1,18 +1,28 @@
 from torch.nn import functional as F
 from torch import nn
 from pl_bolts.models.self_supervised.resnets import resnet18, resnet50
-from torchvision.models import mnasnet1_0
+from torchvision.models import mnasnet1_0, mobilenet_v2
 
 class NasNet(nn.Module):
 
   def __init__(self, pretrained):
     super().__init__()
-
     self.nasnet = mnasnet1_0(pretrained = pretrained)
     self.nasnet.classifier = nn.Identity()
 
   def forward(self, x):
     x = self.nasnet(x)
+    return [x]
+
+class MobileNet(nn.Module):
+
+  def __init__(self, pretrained):
+    super().__init__()
+    self.mobilenet = mobilenet_v2(pretrained = pretrained)
+    self.mobilenet.classifier = nn.Identity()
+
+  def forward(self, x):
+    x = self.mobilenet(x)
     return [x]
 
 class miniCNN(nn.Module):
